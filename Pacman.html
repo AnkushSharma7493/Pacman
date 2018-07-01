@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.ground{ border: 1px solid; width: 1000px; height: 400px; text-align: center;color :yellow;background-color:black;}
+.imgpac{display:block; width:15px; height:15px; margin-left: auto; margin-right: auto;}
+</style>
+
+</head>
+<body onload="StartPacman();">
+<center>
+<img src="ima/pacmanlogo.jpg" style="display:block; width:150px; height:50px;">
+<h3> Pacman Controlls</h3>
+<table>
+<tr>
+<td>
+<img class="imgpac" src="ima/pacman.gif">
+</td>
+<td><span> --> Pacman</span></td>
+<td>
+<img class="imgpac" src="ima/monster.gif">
+</td>
+<td><span> --> Monster</span></td>
+<td>*</td>
+<td><span> --> Food</span></td>
+</tr>
+<tr>
+<td>a</td>
+<td><span> --> Move Left</span></td>
+<td>d</td>
+<td><span> --> Move Right</span></td>
+<td>w</td>
+<td><span> --> Move Up</span></td>
+<td>s</td>
+<td><span> --> Move Down</span></td>
+</tr>
+</table>
+<h4 style="color:Red">OBJECTIVE : Pacman has to eat all food of ground, without being caught by Beast ! </h4>
+<button onclick="willStart();"><input type="text" placeholder="Click here to start the game" id="control" onkeypress="controls(event);"/></button>
+<button onclick="reset();">ReStart</button>
+<h5 style="color:Red" id="notify"></h5>
+<table id="GameGround" class="ground">  
+</table>
+</center>
+<script>
+
+var pacman={};
+function StartPacman() {
+init();
+if(pacman.stage>1)
+{	
+pacman.rows+=5*pacman.stage;
+pacman.column+=5*pacman.stage;
+pacman.beastSpeed-=100*pacman.stage;
+pacman.hero.Row=pacman.rows-1;
+pacman.hero.Column=pacman.column-1;
+pacman.hero.NextRow=pacman.rows-1;
+pacman.hero.NextColumn=pacman.column-1;
+pacman.mo
+}
+ print(pacman.table,pacman.rows,pacman.column,pacman.Food);    
+  run(pacman.hero.Row,pacman.hero.Column,pacman.pacmanPic);
+  run(pacman.beast.NextRow,pacman.beast.NextColumn,pacman.BeastPic);
+document.getElementById("notify").innerHTML=" STAGE "+pacman.stage;
+ }
+function willStart()
+{
+pacman.screenLock=false;
+pacman.refreshIntervalId=setInterval(move, pacman.beastSpeed);
+}
+function reset()
+{
+clearInterval(pacman.refreshIntervalId);
+clearGround(pacman.table,pacman.rows,pacman.column); 
+StartPacman();
+}
+function run(row,column,val)
+{
+if(0<=row && row<=pacman.rows && 0<=column && column<=pacman.column)
+{
+pacman.table.rows[row].cells[column].innerHTML=val;
+}
+else
+{
+document.getElementById("notify").innerHTML="Coordinate Exception occured at "+pacman.beast.NextRow+" & "+pacman.beast.NextColumn;
+}
+}
+function checkBlanks()
+{
+pacman.clearFlag=true;
+for(var i=0;i<pacman.rows;i++)
+{
+for(var j=0;j<pacman.column;j++)
+{
+if(pacman.table.rows[i].cells[j].innerHTML==pacman.Food)
+{
+pacman.clearFlag=false;break;
+}
+}
+}
+if(pacman.clearFlag)
+{
+document.getElementById("notify").innerHTML="CONGRATULATION YOU HAVE CLEARED STAGE "+pacman.stage;
+document.getElementById("control").value="Click here to start next stage";
+pacman.stage++;
+pacman.screenLock=true;
+reset();
+}
+}
+
+function move()
+{
+run(pacman.beast.Row,pacman.beast.Column,pacman.postBeast);
+if(0<=pacman.beast.NextRow && pacman.beast.NextRow<=pacman.rows && 0<=pacman.beast.NextColumn && pacman.beast.NextColumn<=pacman.column)
+{
+pacman.postBeast=pacman.table.rows[pacman.beast.NextRow].cells[pacman.beast.NextColumn].innerHTML;
+}
+run(pacman.beast.NextRow,pacman.beast.NextColumn,pacman.BeastPic);
+beastHunt();
+}
+
+function beastHunt()
+{
+pacman.beast.Row=pacman.beast.NextRow;
+pacman.beast.Column=pacman.beast.NextColumn;
+if(pacman.hero.NextRow-pacman.beast.Row ==0 && pacman.hero.NextColumn-pacman.beast.Column==0)
+{
+document.getElementById("notify").innerHTML="You are Beast's Feast";
+pacman.isBeastHungry=false;
+return 0;
+}
+if(pacman.beast.Row<pacman.hero.NextRow)
+{
+if((Math.floor(Math.random() * 2) + 1 )%2==0)
+{
+pacman.beast.NextRow=pacman.beast.Row+1;
+}
+else {
+columnMove(pacman.beast,pacman.hero);
+}
+}
+else if(pacman.beast.Row>pacman.hero.NextRow)
+{
+if((Math.floor(Math.random() * 2) + 1 )%2==0)
+{
+pacman.beast.NextRow=pacman.beast.Row-1;
+}
+else 
+{
+columnMove(pacman.beast,pacman.hero);
+}
+}else if(pacman.beast.Row==pacman.hero.NextRow)
+{
+columnMove(pacman.beast,pacman.hero);
+}
+}
+
+function columnMove(beast,hero)
+{
+if(beast.Column<hero.NextColumn)
+{
+beast.NextColumn=beast.Column+1;
+}
+else if(beast.Column>hero.NextColumn)
+{
+beast.NextColumn=beast.Column-1;
+}
+else if(pacman.beast.Column==pacman.hero.NextColumn)
+{
+if(pacman.beast.Row<pacman.hero.NextRow){
+pacman.beast.NextRow=pacman.beast.Row+1;
+}
+else{
+pacman.beast.NextRow=pacman.beast.Row-1;
+}
+}
+}
+
+function controls()
+{
+if(!pacman.screenLock)
+{
+checkBlanks();
+    var x = event.which || event.keyCode;
+    switch(x)
+	{
+	case 97 : moveLeft(pacman.hero);break;
+	case 100 : moveRight(pacman.hero);break;
+	case 119 : moveUp(pacman.hero);break;
+	case 115 : moveDown(pacman.hero);break;
+	default :  document.getElementById("notify").innerHTML="Wrong key";
+	}
+	run(pacman.hero.Row,pacman.hero.Column,pacman.NoFood);
+	document.getElementById("control").value="";
+	run(pacman.hero.NextRow,pacman.hero.NextColumn,pacman.pacmanPic);
+}
+else
+{
+willStart();
+}
+}
+
+function moveUp(location)
+{
+location.Row=location.NextRow;
+location.Column=location.NextColumn;
+if(location.Row>0 && pacman.isBeastHungry)
+{
+location.NextRow=location.Row-1;
+}
+}
+function moveDown(location)
+{
+location.Row=location.NextRow;
+location.Column=location.NextColumn;
+if(location.Row<pacman.rows-1 && pacman.isBeastHungry)
+{
+location.NextRow=location.Row+1;
+}
+}
+function moveLeft(location)
+{
+location.Row=location.NextRow;
+location.Column=location.NextColumn;
+if(location.Column>0 && pacman.isBeastHungry)
+{
+location.NextColumn=location.Column-1;
+}
+}
+function moveRight(location)
+{
+location.Row=location.NextRow;
+location.Column=location.NextColumn;
+if(location.Column<pacman.column-1 && pacman.isBeastHungry)
+{
+location.NextColumn=location.Column+1;
+}
+}
+
+function init()
+{
+pacman.rows=5;
+pacman.column=5;
+pacman.postBeast="*";
+pacman.clearFlag=false;
+pacman.table = document.getElementById("GameGround");
+pacman.headtable = document.getElementById("fillhead");
+pacman.pacmanPic='<img class="imgpac"  src="ima/pacman.gif">';
+pacman.BeastPic='<img class="imgpac"  src="ima/monster.gif">';
+pacman.pacmanlogo='<img src="ima/pacmanlogo.jpg">';
+pacman.Food="*";
+pacman.NoFood=".";
+pacman.isBeastHungry=true;
+pacman.beastSpeed=1500;
+pacman.screenLock=true;
+pacman.hero={
+Row:pacman.rows-1,
+Column:pacman.column-1,
+NextRow:pacman.rows-1,
+NextColumn:pacman.column-1
+};
+pacman.beast={
+Row:0,
+Column:0,
+NextRow:0,
+NextColumn:0
+};
+if(pacman.stage==undefined)
+{
+pacman.stage=1;
+}
+}
+
+function print(table,rows,column,data)
+{  
+  for(var i=0;i<rows;i++)
+  {
+   var row = table.insertRow(0);
+   for(var j=0;j<column;j++)
+   {
+   var cell = row.insertCell(0);
+   cell.innerHTML=data;
+   }
+  }
+}
+
+function clearGround(table,rows,column)
+{  
+  for(var i=0;i<rows;i++)
+  {
+   var row = table.deleteRow(0);
+  }
+}
+
+
+</script>
+</body>
+</html>
